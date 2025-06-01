@@ -1,8 +1,8 @@
 package com.budget_app;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CommandManager {
     private ExpenseRegistry expenseRegistry;
@@ -26,6 +26,10 @@ public class CommandManager {
                 commandData=parseData(String.join(" ", Arrays.copyOfRange(command,1,command.length)));
                 processDeleteCommand(commandData);
                 break;
+            case "update":
+                commandData=parseData(String.join(" ",Arrays.copyOfRange(command,1,command.length)));
+                processUpdateCommand(commandData);
+                break;
             case "list":
                 processListCommand();
                 break;
@@ -35,13 +39,38 @@ public class CommandManager {
         }
     }
 
+    private void processUpdateCommand(Map<String, String> commandData) {
+        int id=Integer.parseInt(commandData.get("--id"));
+        Expense temp=expenseRegistry.getExpense(id);
+        if(commandData.containsKey("--description"))
+            temp.setDescription(commandData.get("--description"));
+
+
+        if(commandData.containsKey("--category"))
+            temp.setCategory(Category.valueOf(commandData.get("--category").toUpperCase()));
+
+
+        if(commandData.containsKey("--amount"))
+            temp.setAmount(Integer.parseInt(commandData.get("--amount")));
+
+        expenseRegistry.deleteExpense(id);
+        expenseRegistry.addExpense(temp);
+    }
+
+
     private Map<String,String> parseData(String Line)
     {
+        String regex="\"([^\"]*)\"|(\\S+)";
+        Matcher m= Pattern.compile(regex).matcher(Line);
+        List<String> tokens=new ArrayList<>();
+        while(m.find()){
+            tokens.add(m.group(1) != null ? m.group(1) : m.group(2));
+        }
+
         Map<String,String> data=new HashMap<>();
-        String[] arguments=Line.split(" ");
-        for(int i=0;i<arguments.length;i=i+2)
+        for(int i=0;i<tokens.size();i=i+2)
         {
-            data.put(arguments[i],arguments[i+1]);
+            data.put(tokens.get(i),tokens.get(i+1));
         }
         return data;
 
@@ -64,7 +93,7 @@ public class CommandManager {
 
     private void processListCommand()
     {
-        expenseRegistry.displayExpense();
+        expenseRegistry.displayExpenses();
     }
 
     private void processSummaryCommand()

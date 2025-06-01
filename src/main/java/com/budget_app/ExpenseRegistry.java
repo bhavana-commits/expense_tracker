@@ -14,6 +14,11 @@ public class ExpenseRegistry {
         this.data=fileHandler.loadExpenses();
     }
 
+    public Expense getExpense(Integer id)
+    {
+        return data.get(id);
+    }
+
     public void addExpense(Expense expense)
     {
         data.put(expense.getId(),expense);
@@ -44,7 +49,7 @@ public class ExpenseRegistry {
 
     }
 
-    public void displayExpense()
+    public void displayExpenses()
     {
         System.out.println("ID | Date | Description | Category | Amount");
         for(Expense e:data.values())
